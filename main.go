@@ -80,6 +80,6 @@ func checkStatus(client *http.Client, url string, ch chan GithubStatusData) {
 		ch <- ghStatusData
 
 		resp.Body.Close()
-		time.Sleep(time.Minute * 30)
+		time.Sleep(time.Minute * 5)
 	}
 }
