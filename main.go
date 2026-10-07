@@ -2,13 +2,20 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gen2brain/beeep"
+)
+
+type Indicator = string
+
+const (
+	NONE  Indicator = "none"
+	MINOR Indicator = "minor"
+	MAJOR Indicator = "major"
 )
 
 const endpoint = "https://www.githubstatus.com/api/v2/status.json"
@@ -24,8 +31,8 @@ type Page struct {
 }
 
 type Status struct {
-	Indicator   string `json:"indicator"`
-	Description string `json:"description"`
+	Indicator   Indicator `json:"indicator"`
+	Description string    `json:"description"`
 }
 
 func main() {
@@ -36,16 +43,27 @@ func main() {
 	ch := make(chan GithubStatusData)
 	go checkStatus(client, endpoint, ch)
 
+	var last *GithubStatusData
 	for {
 		msg := <-ch
-		fmt.Println(msg)
-		if msg.Status.Indicator != "none" {
+		// if last == nil {
+		// 	last = &msg
+		// }
+
+		if last != nil && last.Page.UpdatedAt.Equal(msg.Page.UpdatedAt) {
+			log.Println("Identical message from last. Skipping", last, msg)
+			continue
+		}
+
+		if msg.Status.Indicator != NONE || last != nil {
 			if err := beeep.Alert("Github: "+msg.Status.Indicator, msg.Status.Description, []byte{}); err != nil {
 				log.Println("Notification error: ", err.Error())
 			}
 		}
-	}
 
+		last = &msg
+
+	}
 }
 
 func checkStatus(client *http.Client, url string, ch chan GithubStatusData) {
