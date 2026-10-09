@@ -50,7 +50,7 @@ func main() {
 		// 	last = &msg
 		// }
 
-		if last != nil && last.Page.UpdatedAt.Equal(msg.Page.UpdatedAt) {
+		if last != nil && last.Page.UpdatedAt.Equal(msg.Page.UpdatedAt) && last.Status.Indicator == msg.Status.Indicator {
 			log.Println("Identical message from last. Skipping", last, msg)
 			continue
 		}
@@ -62,7 +62,6 @@ func main() {
 		}
 
 		last = &msg
-
 	}
 }
 
