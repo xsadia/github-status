@@ -46,11 +46,8 @@ func main() {
 	var last *GithubStatusData
 	for {
 		msg := <-ch
-		// if last == nil {
-		// 	last = &msg
-		// }
 
-		if last != nil && last.Page.UpdatedAt.Equal(msg.Page.UpdatedAt) && last.Status.Indicator == msg.Status.Indicator {
+		if last != nil && (last.Page.UpdatedAt.Equal(msg.Page.UpdatedAt) || last.Status.Indicator == msg.Status.Indicator) {
 			log.Println("Identical message from last. Skipping", last, msg)
 			continue
 		}
